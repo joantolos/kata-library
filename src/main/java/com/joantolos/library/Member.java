@@ -1,15 +1,20 @@
 package com.joantolos.library;
 
-public class Member {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final String name;
-    private final String id;
-    private final String email;
+public class Member implements Observer {
+
+    private String name;
+    private String id;
+    private String email;
+    private List<Book> borrowedBooks;
 
     public Member(String name, String id, String email) {
         this.name = name;
         this.id = id;
         this.email = email;
+        this.borrowedBooks = new ArrayList<>();
     }
 
     public String getName() {
@@ -22,5 +27,30 @@ public class Member {
 
     public String getEmail() {
         return email;
+    }
+
+    public void addBorrowedBook(Book book) {
+        borrowedBooks.add(book);
+    }
+
+    public void removeBorrowedBook(Book book) {
+        borrowedBooks.remove(book);
+    }
+
+    public boolean hasBorrowedBook(Book book) {
+        return borrowedBooks.contains(book);
+    }
+
+    @Override
+    public void update(Subject s) {
+        if (s instanceof Book) {
+            Book book = (Book) s;
+
+            if (!book.isAvailable() && hasBorrowedBook(book)) {
+                removeBorrowedBook(book);
+            } else if (book.isAvailable() && !hasBorrowedBook(book)) {
+                addBorrowedBook(book);
+            }
+        }
     }
 }

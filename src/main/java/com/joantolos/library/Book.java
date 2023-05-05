@@ -1,17 +1,25 @@
 package com.joantolos.library;
 
-public class Book {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final String title;
-    private final String author;
-    private final String isbn;
-    private final String publisher;
+public class Book extends Subject {
+
+    private String title;
+    private String author;
+    private String isbn;
+    private String publisher;
+    private List<Observer> observers;
+    private boolean available;
+    private Member borrower;
 
     public Book(String title, String author, String isbn, String publisher) {
         this.title = title;
         this.author = author;
         this.isbn = isbn;
         this.publisher = publisher;
+        this.available = true;
+        this.observers = new ArrayList<>();
     }
 
     public String getTitle() {
@@ -31,14 +39,61 @@ public class Book {
     }
 
     public boolean isAvailable() {
-        return false;
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+        notifyObservers();
+    }
+
+    public Member getBorrower() {
+        return borrower;
+    }
+
+    public void setBorrower(Member borrower) {
+        this.borrower = borrower;
     }
 
     public boolean borrowBook(Member member) {
-        return false;
+        if (available) {
+            setAvailable(false);
+            setBorrower(member);
+            member.addBorrowedBook(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public boolean returnBook(Member member) {
-        return false;
+        if (member == borrower) {
+            setAvailable(true);
+            setBorrower(null);
+            member.removeBorrowedBook(this);
+            return true;
+        } else {
+            throw new RuntimeException("This book was not borrowed by this member.");
+        }
+    }
+
+    @Override
+    public void addObserver(Observer o) {
+        super.addObserver(o);
+        observers.add(o);
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+        super.removeObserver(o);
+        observers.remove(o);
+    }
+
+    @Override
+    public void notifyObservers() {
+        super.notifyObservers();
+        for (Observer observer : observers) {
+            observer.update(this);
+        }
     }
 }
